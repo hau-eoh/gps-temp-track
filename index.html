@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS History - Date Picker</title>
+    <title>GPS History - Points Track</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -12,40 +12,17 @@
         body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         #map { height: 100vh; width: 100%; }
 
-        /* --- CONTROL PANEL (MENU) --- */
-        .control-panel {
-            position: absolute; top: 10px; left: 50px; z-index: 1000;
-            background: white; padding: 10px 15px; border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            display: flex; flex-direction: column; gap: 8px;
-            font-size: 13px; min-width: 160px;
-        }
-        .control-group { display: flex; flex-direction: column; gap: 4px; }
+        /* MENU & INFO BOX (Giữ nguyên style cũ) */
+        .control-panel { position: absolute; top: 10px; left: 50px; z-index: 1000; background: white; padding: 10px 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 8px; font-size: 13px; min-width: 160px; }
         .control-label { font-weight: bold; color: #1890ff; font-size: 11px; text-transform: uppercase; }
+        select, input[type="date"] { padding: 6px; border-radius: 4px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; }
+        .loading-bar { height: 3px; width: 0%; background: #1890ff; transition: width 0.3s; margin-top: 5px; border-radius: 2px; }
         
-        /* Select & Input Style */
-        select, input[type="date"] {
-            padding: 6px; border-radius: 4px; border: 1px solid #ccc; 
-            font-family: inherit; font-size: 13px; width: 100%; box-sizing: border-box;
-        }
-        select:focus, input:focus { outline: none; border-color: #1890ff; }
-
-        .loading-bar {
-            height: 3px; width: 0%; background: #1890ff; transition: width 0.3s;
-            margin-top: 5px; border-radius: 2px;
-        }
-
-        /* --- INFO BOX --- */
-        .info-box {
-            position: absolute; top: 10px; right: 10px; z-index: 1000;
-            padding: 12px 15px; background: rgba(255, 255, 255, 0.98);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2); border-radius: 10px;
-            min-width: 180px; border: 1px solid #f0f0f0;
-        }
-        .info-title { font-weight: 800; color: #333; margin-bottom: 8px; border-bottom: 2px solid #1890ff; padding-bottom: 5px; text-align: center; text-transform: uppercase; font-size: 12px; }
+        .info-box { position: absolute; top: 10px; right: 10px; z-index: 1000; padding: 12px 15px; background: rgba(255, 255, 255, 0.98); box-shadow: 0 4px 20px rgba(0,0,0,0.2); border-radius: 10px; min-width: 180px; border: 1px solid #f0f0f0; }
+        .info-title { font-weight: 800; color: #333; margin-bottom: 8px; border-bottom: 2px solid #1890ff; padding-bottom: 5px; text-align: center; font-size: 12px; }
         .info-item { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; color: #555; }
         .info-value { font-weight: bold; font-family: monospace; font-size: 14px; color: #222; }
-        
+
         /* Popup Style */
         .history-popup .leaflet-popup-content-wrapper { border-radius: 8px; padding: 0; }
         .history-popup .leaflet-popup-content { margin: 10px; text-align: center; }
@@ -59,24 +36,17 @@
 <body>
 
 <div class="control-panel">
-    <div class="control-group">
-        <label class="control-label">⚡ Xem nhanh</label>
-        <select id="quickSelect" onchange="loadQuickHistory()">
-            <option value="" disabled selected>-- Chọn --</option>
-            <option value="1">1 Giờ qua</option>
-            <option value="6">6 Giờ qua</option>
-            <option value="12">12 Giờ qua</option>
-            <option value="24">24 Giờ qua</option>
-        </select>
-    </div>
-
-    <div style="text-align:center; color:#ccc; font-size:10px;">— HOẶC —</div>
-
-    <div class="control-group">
-        <label class="control-label">📅 Chọn ngày</label>
-        <input type="date" id="datePicker" onchange="loadDateHistory()">
-    </div>
-
+    <label class="control-label">⚡ Xem nhanh</label>
+    <select id="quickSelect" onchange="loadQuickHistory()">
+        <option value="" disabled selected>-- Chọn --</option>
+        <option value="1">1 Giờ qua</option>
+        <option value="6">6 Giờ qua</option>
+        <option value="12">12 Giờ qua</option>
+        <option value="24">24 Giờ qua</option>
+    </select>
+    <div style="text-align:center; color:#ccc; font-size:10px; margin: 5px 0;">— HOẶC —</div>
+    <label class="control-label">📅 Chọn ngày</label>
+    <input type="date" id="datePicker" onchange="loadDateHistory()">
     <div class="loading-bar" id="loader"></div>
     <div id="statusText" style="font-size:10px; color:#666; text-align:center; margin-top:2px;">Sẵn sàng</div>
 </div>
@@ -88,12 +58,11 @@
 <script>
     const eraWidget = new EraWidget();
     let configJSON;
-    
     let LAT=0, LON=0, SPEED=0, ALT=0, TEMP=0, SATS=0;
     
     let map, marker, infoControl;
     let historyPolyline = null;
-    let historyDataPoints = []; 
+    let historyLayerGroup = null; // Layer chứa các chấm tròn Point
 
     const carPath = "M880 348H730l-10.4-38.6c-4.9-18.1-21.5-30.7-40.2-30.7H344.6c-18.7 0-35.3 12.5-40.2 30.7L294 348H144c-17.7 0-32 14.3-32 32v384c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V380c0-17.7-14.3-32-32-32zM363.6 348l13-48h270.8l13 48H363.6zM848 732H176V412h672v320zM304 528c0-35.3 28.7-64 64-64s64 28.7 64 64-28.7 64-64 64-64-28.7-64-64z m352 0c0-35.3 28.7-64 64-64s64 28.7 64 64-28.7 64-64 64-64-28.7-64-64z";
 
@@ -101,13 +70,9 @@
     eraWidget.init({
         onConfiguration: (configs) => {
             configJSON = configs.realtime_configs[0];
-            
-            // Set mặc định ngày hôm nay cho DatePicker
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('datePicker').value = today;
-            
-            // Load mặc định 24h qua
-            loadQuickHistory(24);
+            loadQuickHistory(1); // Load thử 1h đầu
         },
         onValues: (values) => {
             if (configJSON && values[configJSON.id]) parseRealtime(values[configJSON.id].value);
@@ -116,7 +81,7 @@
             setLoading(false);
             if (history && history[0] && history[0].data) {
                 const count = history[0].data.length;
-                document.getElementById('statusText').innerText = `Tìm thấy ${count} điểm`;
+                document.getElementById('statusText').innerText = `Đã tải ${count} gói tin`;
                 processHistory(history[0].data);
             } else {
                 document.getElementById('statusText').innerText = "Không có dữ liệu";
@@ -125,38 +90,23 @@
         }
     });
 
-    // --- 2. XỬ LÝ LỊCH SỬ (CORE LOGIC) ---
-
-    // Option A: Load theo giờ (Quick)
+    // --- 2. DATA REQUEST ---
     function loadQuickHistory(hoursOverride) {
         let hours = hoursOverride || document.getElementById('quickSelect').value;
         if (!hours) return;
-
-        // Reset DatePicker để user không nhầm lẫn
-        // document.getElementById('datePicker').value = ''; 
-        
         setLoading(true);
         const endTime = Date.now();
         const startTime = endTime - (hours * 60 * 60 * 1000);
-        
         requestData(startTime, endTime);
     }
 
-    // Option B: Load theo ngày cụ thể (Date Picker)
     function loadDateHistory() {
         const dateVal = document.getElementById('datePicker').value;
         if (!dateVal) return;
-
-        // Reset Quick Select
         document.getElementById('quickSelect').value = ""; 
-
         setLoading(true);
-
-        // Tạo thời gian bắt đầu (00:00:00) và kết thúc (23:59:59) của ngày được chọn
-        // Lưu ý: dateVal có dạng YYYY-MM-DD
         const start = new Date(dateVal + "T00:00:00");
         const end = new Date(dateVal + "T23:59:59");
-        
         requestData(start.getTime(), end.getTime());
     }
 
@@ -166,91 +116,100 @@
     }
 
     function clearMapHistory() {
-        if (historyPolyline) {
-            map.removeLayer(historyPolyline);
-            historyPolyline = null;
-        }
-        historyDataPoints = [];
+        if (historyPolyline) { map.removeLayer(historyPolyline); historyPolyline = null; }
+        if (historyLayerGroup) { historyLayerGroup.clearLayers(); } // Xóa hết các chấm point cũ
     }
 
     function setLoading(isLoading) {
         const loader = document.getElementById('loader');
-        const status = document.getElementById('statusText');
-        if (isLoading) {
-            loader.style.width = '100%';
-            status.innerText = "Đang tải...";
-        } else {
-            loader.style.width = '0%';
-        }
+        loader.style.width = isLoading ? '100%' : '0%';
+        if(isLoading) document.getElementById('statusText').innerText = "Đang tải...";
     }
 
-    // --- 3. VẼ MAP ---
+    // --- 3. XỬ LÝ & VẼ MAP (UPDATED) ---
     function processHistory(dataArray) {
         const latLngs = [];
         const cleanData = [];
 
-        dataArray.forEach(item => {
+        dataArray.forEach((item, idx) => {
             try {
-                const raw = item[1];
-                if (typeof raw === 'string' && raw.startsWith('{')) {
-                    const d = JSON.parse(raw);
-                    if (d.lat && d.lon && Math.abs(d.lat) > 0.1) {
-                        const lat = parseFloat(d.lat);
-                        const lon = parseFloat(d.lon);
-                        latLngs.push([lat, lon]);
-                        cleanData.push({
-                            lat: lat, lon: lon,
-                            temp: parseFloat(d.temp || 0),
-                            spd: parseFloat(d.spd || 0),
-                            alt: parseFloat(d.alt || 0),
-                            ts: item[0]
-                        });
-                    }
+                let raw = item[1];
+                let d = null;
+                // Parse an toàn
+                if (typeof raw === 'string') {
+                    if (raw.startsWith('"') && raw.endsWith('"')) raw = JSON.parse(raw);
+                    if (raw.startsWith('{')) d = JSON.parse(raw);
+                } else if (typeof raw === 'object') {
+                    d = raw;
                 }
-            } catch (e) {}
+
+                if (d && d.lat && d.lon && Math.abs(d.lat) > 0.1) {
+                    const lat = parseFloat(d.lat);
+                    const lon = parseFloat(d.lon);
+                    
+                    // Lưu dữ liệu sạch
+                    latLngs.push([lat, lon]);
+                    cleanData.push({
+                        lat: lat, lon: lon,
+                        temp: parseFloat(d.temp || 0),
+                        spd: parseFloat(d.spd || 0),
+                        alt: parseFloat(d.alt || 0),
+                        ts: item[0] // timestamp
+                    });
+                }
+            } catch (e) { }
         });
 
-        historyDataPoints = cleanData;
-
+        // Vẽ lên bản đồ
         if (latLngs.length > 0) {
+            // 1. Vẽ đường nối (Polyline)
             historyPolyline = L.polyline(latLngs, {
-                color: '#3388ff', weight: 5, opacity: 0.8, lineJoin: 'round'
+                color: '#999',  // Màu xám cho đường nối
+                weight: 3,
+                opacity: 0.5,
+                dashArray: '5, 5' // Nét đứt
             }).addTo(map);
 
-            map.fitBounds(historyPolyline.getBounds());
+            // 2. Vẽ các chấm Point (CircleMarker) - MỖI PHÚT MỘT ĐIỂM
+            historyLayerGroup = L.layerGroup().addTo(map); // Tạo group để dễ xóa
 
-            historyPolyline.on('click', function(e) {
-                const closestPoint = findClosestDataPoint(e.latlng);
-                if (closestPoint) showHistoryPopup(closestPoint);
+            cleanData.forEach(pt => {
+                const color = getGradientColor(pt.spd); // Màu chấm theo tốc độ
+
+                const circle = L.circleMarker([pt.lat, pt.lon], {
+                    radius: 5,              // Kích thước chấm
+                    fillColor: color,       // Màu nền (theo tốc độ)
+                    color: '#fff',          // Viền trắng
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 1
+                });
+                
+                // Gắn Popup cho từng điểm
+                const timeStr = new Date(pt.ts).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+                const popupContent = `
+                    <div style="text-align:center">
+                        <div style="font-size:10px; color:#888">${timeStr}</div>
+                        <div style="font-size:18px; font-weight:bold; color:${color}">${pt.spd.toFixed(0)} km/h</div>
+                        <div style="font-size:12px; margin-top:2px;">Temp: <b style="color:#ff4d4f">${pt.temp}°C</b></div>
+                    </div>
+                `;
+                circle.bindPopup(popupContent, { closeButton: false }); // Popup đơn giản
+
+                circle.addTo(historyLayerGroup);
             });
+
+            // Zoom bản đồ
+            map.fitBounds(historyPolyline.getBounds(), { padding: [50, 50] });
+
+            // Đánh dấu Start/End
+            L.marker(latLngs[0], { title: 'Bắt đầu' }).addTo(historyLayerGroup).bindPopup("<b>Điểm bắt đầu</b>");
+            L.marker(latLngs[latLngs.length-1], { title: 'Kết thúc' }).addTo(historyLayerGroup).bindPopup("<b>Điểm kết thúc</b>");
+
+            document.getElementById('statusText').innerText = `Hiển thị ${latLngs.length} điểm hành trình`;
+        } else {
+            document.getElementById('statusText').innerText = "Dữ liệu toạ độ lỗi (0,0)";
         }
-    }
-
-    function findClosestDataPoint(clickLatLng) {
-        let minDist = Infinity;
-        let closest = null;
-        historyDataPoints.forEach(pt => {
-            const dLat = pt.lat - clickLatLng.lat;
-            const dLon = pt.lon - clickLatLng.lng;
-            const distSq = dLat*dLat + dLon*dLon;
-            if (distSq < minDist) { minDist = distSq; closest = pt; }
-        });
-        return closest;
-    }
-
-    function showHistoryPopup(pt) {
-        const timeStr = new Date(pt.ts).toLocaleTimeString('vi-VN');
-        const popupContent = `
-            <div class="popup-temp">${pt.temp.toFixed(1)}°C</div>
-            <div class="popup-sub">
-                <b>${pt.spd.toFixed(1)} km/h</b> | Alt: ${pt.alt}m<br>
-                <span style="color:#999; font-size:10px">${timeStr}</span>
-            </div>
-        `;
-        L.popup({ className: 'history-popup', offset: [0, -5] })
-        .setLatLng([pt.lat, pt.lon])
-        .setContent(popupContent)
-        .openOn(map);
     }
 
     // --- 4. MAP & REALTIME ---
@@ -259,7 +218,10 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
         marker = L.marker([10.762622, 106.660172], { icon: createCarIcon() }).addTo(map);
         createInfoControl();
-        setInterval(() => { if(LAT && LON) marker.setLatLng([LAT, LON]); }, 1000);
+        
+        setInterval(() => {
+            if(LAT && LON) marker.setLatLng([LAT, LON]);
+        }, 1000);
     }
 
     function parseRealtime(raw) {
@@ -281,10 +243,11 @@
         infoControl = L.control({position: 'topright'});
         infoControl.onAdd = function() { this._div = L.DomUtil.create('div', 'info-box'); this.update(); return this._div; };
         infoControl.update = function() {
+            const color = getGradientColor(SPEED);
             this._div.innerHTML = `
                 <div class="info-title">REALTIME MONITOR</div>
                 <div class="info-item"><span>Temp:</span><span class="info-value" style="color:#ff4d4f">${TEMP.toFixed(1)} °C</span></div>
-                <div class="info-item"><span>Speed:</span><span class="info-value">${SPEED.toFixed(1)} km/h</span></div>
+                <div class="info-item"><span>Speed:</span><span class="info-value" style="color:${color}">${SPEED.toFixed(1)} km/h</span></div>
                 <div class="info-item"><span>Alt:</span><span class="info-value">${ALT.toFixed(1)} m</span></div>
                 <div class="info-item"><span>Sats:</span><span class="info-value">${SATS}</span></div>
             `;
@@ -293,6 +256,19 @@
     }
     function updateInfoBox() { if(infoControl) infoControl.update(); }
 
+    function getGradientColor(speed) {
+        const stops = [{s:0,c:[0,0,255]},{s:40,c:[0,255,0]},{s:70,c:[255,165,0]},{s:100,c:[255,0,0]},{s:120,c:[148,0,211]}];
+        if (speed <= 0) return `rgb(${stops[0].c})`; if (speed >= 120) return `rgb(${stops[4].c})`;
+        for (let i=0; i<stops.length-1; i++) {
+            if (speed>=stops[i].s && speed<=stops[i+1].s) {
+                let f=(speed-stops[i].s)/(stops[i+1].s-stops[i].s);
+                let r=Math.round(stops[i].c[0]+f*(stops[i+1].c[0]-stops[i].c[0]));
+                let g=Math.round(stops[i].c[1]+f*(stops[i+1].c[1]-stops[i].c[1]));
+                let b=Math.round(stops[i].c[2]+f*(stops[i+1].c[2]-stops[i].c[2]));
+                return `rgb(${r},${g},${b})`;
+            }
+        }
+    }
 </script>
 </body>
 </html>
