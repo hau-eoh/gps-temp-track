@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS History - Points Track</title>
+    <title>GPS History - Filtered</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -12,23 +12,19 @@
         body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         #map { height: 100vh; width: 100%; }
 
-        /* MENU & INFO BOX (Giữ nguyên style cũ) */
+        /* MENU & UI */
         .control-panel { position: absolute; top: 10px; left: 50px; z-index: 1000; background: white; padding: 10px 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 8px; font-size: 13px; min-width: 160px; }
         .control-label { font-weight: bold; color: #1890ff; font-size: 11px; text-transform: uppercase; }
         select, input[type="date"] { padding: 6px; border-radius: 4px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; }
         .loading-bar { height: 3px; width: 0%; background: #1890ff; transition: width 0.3s; margin-top: 5px; border-radius: 2px; }
         
+        /* INFO BOX */
         .info-box { position: absolute; top: 10px; right: 10px; z-index: 1000; padding: 12px 15px; background: rgba(255, 255, 255, 0.98); box-shadow: 0 4px 20px rgba(0,0,0,0.2); border-radius: 10px; min-width: 180px; border: 1px solid #f0f0f0; }
         .info-title { font-weight: 800; color: #333; margin-bottom: 8px; border-bottom: 2px solid #1890ff; padding-bottom: 5px; text-align: center; font-size: 12px; }
         .info-item { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; color: #555; }
         .info-value { font-weight: bold; font-family: monospace; font-size: 14px; color: #222; }
 
-        /* Popup Style */
-        .history-popup .leaflet-popup-content-wrapper { border-radius: 8px; padding: 0; }
-        .history-popup .leaflet-popup-content { margin: 10px; text-align: center; }
-        .popup-temp { font-size: 24px; font-weight: bold; color: #ff4d4f; line-height: 1.2; }
-        .popup-sub { font-size: 12px; color: #666; margin-top: 5px; border-top: 1px solid #eee; padding-top: 5px; }
-
+        /* MARKER & POPUP */
         .custom-div-icon { background: transparent; border: none; }
         .marker-pin { filter: drop-shadow(0px 3px 6px rgba(0,0,0,0.4)); }
     </style>
@@ -48,7 +44,7 @@
     <label class="control-label">📅 Chọn ngày</label>
     <input type="date" id="datePicker" onchange="loadDateHistory()">
     <div class="loading-bar" id="loader"></div>
-    <div id="statusText" style="font-size:10px; color:#666; text-align:center; margin-top:2px;">Sẵn sàng</div>
+    <div id="statusText" style="font-size:10px; color:#666; text-align:center; margin-top:5px; border-top:1px solid #eee; padding-top:5px;">Sẵn sàng</div>
 </div>
 
 <div id="map"></div>
@@ -62,7 +58,7 @@
     
     let map, marker, infoControl;
     let historyPolyline = null;
-    let historyLayerGroup = null; // Layer chứa các chấm tròn Point
+    let historyLayerGroup = null;
 
     const carPath = "M880 348H730l-10.4-38.6c-4.9-18.1-21.5-30.7-40.2-30.7H344.6c-18.7 0-35.3 12.5-40.2 30.7L294 348H144c-17.7 0-32 14.3-32 32v384c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V380c0-17.7-14.3-32-32-32zM363.6 348l13-48h270.8l13 48H363.6zM848 732H176V412h672v320zM304 528c0-35.3 28.7-64 64-64s64 28.7 64 64-28.7 64-64 64-64-28.7-64-64z m352 0c0-35.3 28.7-64 64-64s64 28.7 64 64-28.7 64-64 64-64-28.7-64-64z";
 
@@ -72,7 +68,8 @@
             configJSON = configs.realtime_configs[0];
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('datePicker').value = today;
-            loadQuickHistory(1); // Load thử 1h đầu
+            // Load thử 1h đầu
+            loadQuickHistory(1);
         },
         onValues: (values) => {
             if (configJSON && values[configJSON.id]) parseRealtime(values[configJSON.id].value);
@@ -80,11 +77,10 @@
         onHistories: (history) => {
             setLoading(false);
             if (history && history[0] && history[0].data) {
-                const count = history[0].data.length;
-                document.getElementById('statusText').innerText = `Đã tải ${count} gói tin`;
+                // Nhận được dữ liệu thô -> Chuyển sang xử lý
                 processHistory(history[0].data);
             } else {
-                document.getElementById('statusText').innerText = "Không có dữ liệu";
+                document.getElementById('statusText').innerText = "Không có dữ liệu log";
                 clearMapHistory();
             }
         }
@@ -117,75 +113,87 @@
 
     function clearMapHistory() {
         if (historyPolyline) { map.removeLayer(historyPolyline); historyPolyline = null; }
-        if (historyLayerGroup) { historyLayerGroup.clearLayers(); } // Xóa hết các chấm point cũ
+        if (historyLayerGroup) { historyLayerGroup.clearLayers(); }
     }
 
     function setLoading(isLoading) {
-        const loader = document.getElementById('loader');
-        loader.style.width = isLoading ? '100%' : '0%';
+        document.getElementById('loader').style.width = isLoading ? '100%' : '0%';
         if(isLoading) document.getElementById('statusText').innerText = "Đang tải...";
     }
 
-    // --- 3. XỬ LÝ & VẼ MAP (UPDATED) ---
+    // --- 3. XỬ LÝ LỊCH SỬ (LOGIC LỌC 0,0) ---
     function processHistory(dataArray) {
         const latLngs = [];
         const cleanData = [];
+        let skippedCount = 0;
 
-        dataArray.forEach((item, idx) => {
+        console.log("Tổng số gói tin nhận được:", dataArray.length);
+
+        dataArray.forEach((item) => {
             try {
                 let raw = item[1];
                 let d = null;
-                // Parse an toàn
+                
+                // Parse JSON an toàn
                 if (typeof raw === 'string') {
-                    if (raw.startsWith('"') && raw.endsWith('"')) raw = JSON.parse(raw);
-                    if (raw.startsWith('{')) d = JSON.parse(raw);
+                    // Xử lý trường hợp chuỗi bị bọc 2 lần ngoặc kép (đôi khi xảy ra)
+                    if (raw.startsWith('"') && raw.endsWith('"')) {
+                        try { raw = JSON.parse(raw); } catch(e){}
+                    }
+                    if (raw.startsWith('{')) {
+                        try { d = JSON.parse(raw); } catch(e){}
+                    }
                 } else if (typeof raw === 'object') {
                     d = raw;
                 }
 
-                if (d && d.lat && d.lon && Math.abs(d.lat) > 0.1) {
+                if (d) {
+                    // Kiểm tra toạ độ có tồn tại không
                     const lat = parseFloat(d.lat);
                     const lon = parseFloat(d.lon);
-                    
-                    // Lưu dữ liệu sạch
-                    latLngs.push([lat, lon]);
-                    cleanData.push({
-                        lat: lat, lon: lon,
-                        temp: parseFloat(d.temp || 0),
-                        spd: parseFloat(d.spd || 0),
-                        alt: parseFloat(d.alt || 0),
-                        ts: item[0] // timestamp
-                    });
+
+                    // LOGIC LỌC: Chỉ lấy nếu lat, lon khác 0 và không bị NaN
+                    // Math.abs(lat) > 0.0001 để loại bỏ các toạ độ 0.0 hoặc sai số cực nhỏ
+                    if (!isNaN(lat) && !isNaN(lon) && Math.abs(lat) > 0.0001 && Math.abs(lon) > 0.0001) {
+                        
+                        latLngs.push([lat, lon]);
+                        
+                        cleanData.push({
+                            lat: lat, lon: lon,
+                            temp: parseFloat(d.temp || 0),
+                            spd: parseFloat(d.spd || 0),
+                            alt: parseFloat(d.alt || 0),
+                            ts: item[0] // timestamp
+                        });
+                    } else {
+                        skippedCount++;
+                    }
                 }
-            } catch (e) { }
+            } catch (e) {
+                console.warn("Lỗi item:", e);
+            }
         });
 
-        // Vẽ lên bản đồ
+        console.log(`Hợp lệ: ${latLngs.length}, Bỏ qua (0,0): ${skippedCount}`);
+
         if (latLngs.length > 0) {
+            // Cập nhật trạng thái
+            document.getElementById('statusText').innerText = `Hiển thị ${latLngs.length} điểm\n(Bỏ qua ${skippedCount} lỗi)`;
+
             // 1. Vẽ đường nối (Polyline)
             historyPolyline = L.polyline(latLngs, {
-                color: '#999',  // Màu xám cho đường nối
-                weight: 3,
-                opacity: 0.5,
-                dashArray: '5, 5' // Nét đứt
+                color: '#999', weight: 3, opacity: 0.5, dashArray: '5, 5'
             }).addTo(map);
 
-            // 2. Vẽ các chấm Point (CircleMarker) - MỖI PHÚT MỘT ĐIỂM
-            historyLayerGroup = L.layerGroup().addTo(map); // Tạo group để dễ xóa
+            // 2. Vẽ các chấm Point (CircleMarker)
+            historyLayerGroup = L.layerGroup().addTo(map);
 
             cleanData.forEach(pt => {
-                const color = getGradientColor(pt.spd); // Màu chấm theo tốc độ
-
+                const color = getGradientColor(pt.spd);
                 const circle = L.circleMarker([pt.lat, pt.lon], {
-                    radius: 5,              // Kích thước chấm
-                    fillColor: color,       // Màu nền (theo tốc độ)
-                    color: '#fff',          // Viền trắng
-                    weight: 1,
-                    opacity: 1,
-                    fillOpacity: 1
+                    radius: 5, fillColor: color, color: '#fff', weight: 1, opacity: 1, fillOpacity: 1
                 });
                 
-                // Gắn Popup cho từng điểm
                 const timeStr = new Date(pt.ts).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
                 const popupContent = `
                     <div style="text-align:center">
@@ -194,21 +202,25 @@
                         <div style="font-size:12px; margin-top:2px;">Temp: <b style="color:#ff4d4f">${pt.temp}°C</b></div>
                     </div>
                 `;
-                circle.bindPopup(popupContent, { closeButton: false }); // Popup đơn giản
-
+                circle.bindPopup(popupContent, { closeButton: false });
                 circle.addTo(historyLayerGroup);
             });
 
             // Zoom bản đồ
             map.fitBounds(historyPolyline.getBounds(), { padding: [50, 50] });
 
-            // Đánh dấu Start/End
-            L.marker(latLngs[0], { title: 'Bắt đầu' }).addTo(historyLayerGroup).bindPopup("<b>Điểm bắt đầu</b>");
-            L.marker(latLngs[latLngs.length-1], { title: 'Kết thúc' }).addTo(historyLayerGroup).bindPopup("<b>Điểm kết thúc</b>");
+            // Marker Start/End
+            L.marker(latLngs[0], { title: 'Bắt đầu' }).addTo(historyLayerGroup).bindPopup("<b>Bắt đầu</b>");
+            L.marker(latLngs[latLngs.length-1], { title: 'Kết thúc' }).addTo(historyLayerGroup).bindPopup("<b>Kết thúc</b>");
 
-            document.getElementById('statusText').innerText = `Hiển thị ${latLngs.length} điểm hành trình`;
         } else {
-            document.getElementById('statusText').innerText = "Dữ liệu toạ độ lỗi (0,0)";
+            // Trường hợp không có điểm nào hợp lệ
+            if (dataArray.length > 0) {
+                document.getElementById('statusText').innerText = `Toàn bộ ${dataArray.length} điểm bị lỗi (0,0)`;
+                alert("Dữ liệu log tồn tại nhưng toàn bộ toạ độ đều bằng 0. Hãy kiểm tra lại thiết bị GPS.");
+            } else {
+                document.getElementById('statusText').innerText = "Không có dữ liệu trong khoảng thời gian này";
+            }
         }
     }
 
@@ -220,7 +232,7 @@
         createInfoControl();
         
         setInterval(() => {
-            if(LAT && LON) marker.setLatLng([LAT, LON]);
+            if(LAT && LON && Math.abs(LAT)>0.1) marker.setLatLng([LAT, LON]);
         }, 1000);
     }
 
