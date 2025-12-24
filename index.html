@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS History - Filtered</title>
+    <title>GPS History - Debug & Fix</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -121,71 +121,91 @@
         if(isLoading) document.getElementById('statusText').innerText = "Đang tải...";
     }
 
-    // --- 3. XỬ LÝ LỊCH SỬ (LOGIC LỌC 0,0) ---
+    // --- 3. XỬ LÝ LỊCH SỬ (LOGIC PARSER MỚI) ---
+    
+    // Hàm Parser đa năng: Cố gắng lấy JSON Object từ bất kỳ input nào
+    function safeJsonParse(input) {
+        if (!input) return null;
+        
+        // Nếu đã là object thì trả về luôn
+        if (typeof input === 'object') return input;
+
+        // Nếu là string, cố gắng parse
+        if (typeof input === 'string') {
+            const trimmed = input.trim();
+            try {
+                const parsed = JSON.parse(trimmed);
+                
+                // Đệ quy: Nếu parse xong vẫn ra string (Double stringify), parse tiếp
+                if (typeof parsed === 'string') {
+                    return safeJsonParse(parsed);
+                }
+                return parsed;
+            } catch (e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
     function processHistory(dataArray) {
         const latLngs = [];
         const cleanData = [];
         let skippedCount = 0;
+        let validCount = 0;
 
-        console.log("Tổng số gói tin nhận được:", dataArray.length);
+        // DEBUG: In ra cấu trúc của phần tử đầu tiên để kiểm tra
+        if (dataArray.length > 0) {
+            console.log("DEBUG RAW ITEM[0]:", dataArray[0]);
+        }
 
         dataArray.forEach((item) => {
-            try {
-                let raw = item[1];
-                let d = null;
-                
-                // Parse JSON an toàn
-                if (typeof raw === 'string') {
-                    // Xử lý trường hợp chuỗi bị bọc 2 lần ngoặc kép (đôi khi xảy ra)
-                    if (raw.startsWith('"') && raw.endsWith('"')) {
-                        try { raw = JSON.parse(raw); } catch(e){}
-                    }
-                    if (raw.startsWith('{')) {
-                        try { d = JSON.parse(raw); } catch(e){}
-                    }
-                } else if (typeof raw === 'object') {
-                    d = raw;
-                }
+            // item[0]: Timestamp
+            // item[1]: Value (có thể là String, Object, hoặc lồng nhau)
+            
+            let rawValue = item[1];
+            
+            // Bước 1: Dùng hàm parse đa năng để lấy Object
+            let d = safeJsonParse(rawValue);
 
-                if (d) {
-                    // Kiểm tra toạ độ có tồn tại không
-                    const lat = parseFloat(d.lat);
-                    const lon = parseFloat(d.lon);
+            // Bước 2: Kiểm tra dữ liệu sau parse
+            if (d && d.lat !== undefined && d.lon !== undefined) {
+                const lat = parseFloat(d.lat);
+                const lon = parseFloat(d.lon);
 
-                    // LOGIC LỌC: Chỉ lấy nếu lat, lon khác 0 và không bị NaN
-                    // Math.abs(lat) > 0.0001 để loại bỏ các toạ độ 0.0 hoặc sai số cực nhỏ
-                    if (!isNaN(lat) && !isNaN(lon) && Math.abs(lat) > 0.0001 && Math.abs(lon) > 0.0001) {
-                        
-                        latLngs.push([lat, lon]);
-                        
-                        cleanData.push({
-                            lat: lat, lon: lon,
-                            temp: parseFloat(d.temp || 0),
-                            spd: parseFloat(d.spd || 0),
-                            alt: parseFloat(d.alt || 0),
-                            ts: item[0] // timestamp
-                        });
-                    } else {
-                        skippedCount++;
-                    }
+                // Bước 3: Lọc toạ độ
+                if (!isNaN(lat) && !isNaN(lon) && Math.abs(lat) > 0.1 && Math.abs(lon) > 0.1) {
+                    
+                    latLngs.push([lat, lon]);
+                    
+                    cleanData.push({
+                        lat: lat, lon: lon,
+                        temp: parseFloat(d.temp || 0),
+                        spd: parseFloat(d.spd || 0),
+                        alt: parseFloat(d.alt || 0),
+                        ts: item[0] // timestamp từ mảng gốc
+                    });
+                    validCount++;
+                } else {
+                    skippedCount++;
                 }
-            } catch (e) {
-                console.warn("Lỗi item:", e);
+            } else {
+                // Nếu parse thất bại hoặc không có field lat/lon
+                skippedCount++;
             }
         });
 
-        console.log(`Hợp lệ: ${latLngs.length}, Bỏ qua (0,0): ${skippedCount}`);
+        console.log(`Kết quả lọc: Hợp lệ ${validCount}, Bỏ qua ${skippedCount}`);
 
-        if (latLngs.length > 0) {
-            // Cập nhật trạng thái
-            document.getElementById('statusText').innerText = `Hiển thị ${latLngs.length} điểm\n(Bỏ qua ${skippedCount} lỗi)`;
+        if (validCount > 0) {
+            document.getElementById('statusText').innerText = `Hiển thị ${validCount} điểm\n(Ẩn ${skippedCount} điểm lỗi)`;
 
-            // 1. Vẽ đường nối (Polyline)
+            // Vẽ đường nối
             historyPolyline = L.polyline(latLngs, {
                 color: '#999', weight: 3, opacity: 0.5, dashArray: '5, 5'
             }).addTo(map);
 
-            // 2. Vẽ các chấm Point (CircleMarker)
+            // Vẽ các chấm Point
             historyLayerGroup = L.layerGroup().addTo(map);
 
             cleanData.forEach(pt => {
@@ -214,13 +234,10 @@
             L.marker(latLngs[latLngs.length-1], { title: 'Kết thúc' }).addTo(historyLayerGroup).bindPopup("<b>Kết thúc</b>");
 
         } else {
-            // Trường hợp không có điểm nào hợp lệ
-            if (dataArray.length > 0) {
-                document.getElementById('statusText').innerText = `Toàn bộ ${dataArray.length} điểm bị lỗi (0,0)`;
-                alert("Dữ liệu log tồn tại nhưng toàn bộ toạ độ đều bằng 0. Hãy kiểm tra lại thiết bị GPS.");
-            } else {
-                document.getElementById('statusText').innerText = "Không có dữ liệu trong khoảng thời gian này";
-            }
+            // Có dữ liệu tải về nhưng không parse được điểm nào hợp lệ
+            console.log("Dữ liệu tải về:", dataArray);
+            document.getElementById('statusText').innerText = "Dữ liệu không đúng định dạng JSON";
+            alert("Đã tải được log nhưng không thể đọc toạ độ. Vui lòng nhấn F12 -> Console và chụp màn hình gửi cho dev.");
         }
     }
 
@@ -237,13 +254,14 @@
     }
 
     function parseRealtime(raw) {
-        try {
-            const d = JSON.parse(raw);
+        // Dùng luôn hàm safeJsonParse cho realtime để đồng bộ
+        const d = safeJsonParse(raw);
+        if (d) {
             if(d.lat) LAT=parseFloat(d.lat); if(d.lon) LON=parseFloat(d.lon);
             if(d.spd) SPEED=parseFloat(d.spd); if(d.alt) ALT=parseFloat(d.alt);
             if(d.temp) TEMP=parseFloat(d.temp); if(d.sat) SATS=parseInt(d.sat);
             updateInfoBox();
-        } catch(e){}
+        }
     }
 
     function createCarIcon() {
