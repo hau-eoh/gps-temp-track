@@ -1,2 +1,0 @@
-- Project scaffolded by assistant for a Hello World Vite + React project.
-- Verify files: `package.json`, `index.html`, `src/main.jsx`, `src/App.jsx`, `README.md`.
