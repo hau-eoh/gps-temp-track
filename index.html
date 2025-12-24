@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Ra GPS Monitor (High Precision)</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #map { height: 100vh; width: 100%; }
+
+        /* Bảng thông tin (Info Box) */
+        .info-box {
+            position: absolute; top: 10px; right: 10px; z-index: 1000;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            border-radius: 12px;
+            min-width: 200px;
+            border: 1px solid #e0e0e0;
+        }
+        .info-title {
+            font-weight: 800; color: #333; margin-bottom: 12px; 
+            border-bottom: 3px solid #1890ff; padding-bottom: 5px;
+            text-align: center; text-transform: uppercase; letter-spacing: 1px; font-size: 13px;
+        }
+        .info-item {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 8px; font-size: 14px; color: #444;
+        }
+        .info-value { font-weight: bold; font-family: monospace; font-size: 16px; color: #000; }
+        
+        /* Footer hiển thị Lat/Lon chi tiết */
+        .info-footer {
+            margin-top: 12px; padding-top: 10px; border-top: 1px solid #eee;
+            font-size: 12px; color: #666; text-align: right; line-height: 1.6; font-family: monospace;
+        }
+
+        /* Marker Icon Style */
+        .custom-div-icon { background: transparent; border: none; }
+        .marker-pin {
+            width: 48px; height: 48px;
+            display: flex; justify-content: center; align-items: center;
+            filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.3));
+            transition: transform 0.5s linear; /* Hiệu ứng di chuyển mượt */
+        }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.3/src/index.js"></script>
+
+<script>
+    // --- VARIABLES ---
+    const eraWidget = new EraWidget();
+    let configJSON, configBUTTON;
+    
+    // Dữ liệu GPS
+    let LAT = 0.0, LON = 0.0, SPEED = 0.0, ALT = 0.0, TEMP = 0.0, SATS = 0;
+    let BUTTON = 0;
+    
+    // Icon Path (Car Outlined)
+    const carPath = "M880 348H730l-10.4-38.6c-4.9-18.1-21.5-30.7-40.2-30.7H344.6c-18.7 0-35.3 12.5-40.2 30.7L294 348H144c-17.7 0-32 14.3-32 32v384c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V380c0-17.7-14.3-32-32-32zM363.6 348l13-48h270.8l13 48H363.6zM848 732H176V412h672v320zM304 528c0-35.3 28.7-64 64-64s64 28.7 64 64-28.7 64-64 64-64-28.7-64-64z m352 0c0-35.3 28.7-64 64-64s64 28.7 64 64-28.7 64-64 64-64-28.7-64-64z";
+
+    // Map instances
+    let map, marker, infoControl, currentPath, currentColor;
+    let pathCoordinates = [], lastPosition = null;
+
+    // --- 1. E-RA CONNECTION ---
+    eraWidget.init({
+        onConfiguration: (configs) => {
+            configJSON = configs.realtime_configs[0]; // V20
+            configBUTTON = configs.realtime_configs[1]; // V10
+        },
+        onValues: (values) => {
+            // Xử lý JSON GPS
+            if (configJSON && values[configJSON.id]) {
+                try {
+                    const rawString = values[configJSON.id].value;
+                    
+                    // DEBUG: In ra console để kiểm tra số liệu gốc E-Ra gửi xuống
+                    // Bấm F12 -> Console trên trình duyệt để xem
+                    console.log("Raw JSON from E-Ra:", rawString); 
+
+                    const data = JSON.parse(rawString);
+                    
+                    // Cập nhật biến toàn cục
+                    if (data.lat !== undefined) LAT = parseFloat(data.lat);
+                    if (data.lon !== undefined) LON = parseFloat(data.lon);
+                    if (data.alt !== undefined) ALT = parseFloat(data.alt);
+                    if (data.spd !== undefined) SPEED = parseFloat(data.spd);
+                    if (data.temp !== undefined) TEMP = parseFloat(data.temp);
+                    if (data.sat !== undefined) SATS = parseInt(data.sat);
+                    
+                    updateInfoBox(); // Cập nhật bảng thông tin ngay
+                } catch (e) {
+                    console.error("JSON Parse Error:", e);
+                }
+            }
+            // Xử lý nút bấm
+            if (configBUTTON && values[configBUTTON.id]) {
+                BUTTON = parseInt(values[configBUTTON.id].value);
+            }
+        }
+    });
+
+    // --- 2. MAP INIT ---
+    window.onload = function() {
+        initMap();
+    }
+
+    function initMap() {
+        // Tọa độ mặc định (TP.HCM)
+        const startLat = 10.762622;
+        const startLng = 106.660172;
+
+        map = L.map('map').setView([startLat, startLng], 15);
+
+        // Lớp bản đồ OSM
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // Tạo Marker
+        marker = L.marker([startLat, startLng], { icon: createCarIcon() }).addTo(map);
+
+        // Tạo bảng Info
+        createInfoControl();
+
+        // Loop cập nhật vị trí (Mượt mà hơn)
+        setInterval(updateMapCenter, 1000);
+    }
+
+    // --- 3. ICON CREATOR ---
+    function createCarIcon() {
+        const color = "#1890ff"; // Blue
+        const svgHtml = `
+            <svg viewBox="0 0 1024 1024" width="48" height="48" xmlns="http://www.w3.org/2000/svg">
+                <path d="${carPath}" fill="${color}" stroke="white" stroke-width="20"></path>
+            </svg>
+        `;
+        return L.divIcon({
+            className: 'custom-div-icon',
+            html: `<div class="marker-pin">${svgHtml}</div>`,
+            iconSize: [48, 48],
+            iconAnchor: [24, 24],
+            popupAnchor: [0, -24]
+        });
+    }
+
+    // --- 4. MAP UPDATE LOGIC ---
+    function updateMapCenter() {
+        if (LAT && LON && LAT !== 0) {
+            const newLatLng = [LAT, LON];
+            
+            // Cập nhật vị trí marker
+            marker.setLatLng(newLatLng);
+            map.panTo(newLatLng);
+
+            // Nội dung Popup (chỉ hiện nhiệt độ)
+            const popupContent = `
+                <div style="text-align:center; padding: 5px;">
+                    <div style="font-size:11px; color:#888; text-transform:uppercase;">Nhiệt độ</div>
+                    <div style="font-size:26px; font-weight:bold; color:#ff4d4f;">
+                        ${TEMP.toFixed(1)}°C
+                    </div>
+                </div>
+            `;
+            
+            // Cập nhật Popup nội dung động
+            if (marker.getPopup() && marker.getPopup().isOpen()) {
+                 marker.getPopup().setContent(popupContent);
+            } else {
+                 marker.bindPopup(popupContent);
+            }
+
+            // Vẽ đường (Tracking)
+            if (BUTTON === 1) {
+                const strokeColor = getGradientColor(SPEED);
+                if (!currentPath || strokeColor !== currentColor) {
+                    // Nối điểm cũ để liền mạch
+                    if (pathCoordinates.length > 0 && lastPosition) pathCoordinates = [lastPosition];
+                    else pathCoordinates = [];
+                    
+                    currentColor = strokeColor;
+                    currentPath = L.polyline([], {color: strokeColor, weight: 6, opacity: 0.9, lineCap: 'round'}).addTo(map);
+                }
+                pathCoordinates.push(newLatLng);
+                currentPath.setLatLngs(pathCoordinates);
+                lastPosition = newLatLng;
+            } else {
+                pathCoordinates = []; currentPath = null; lastPosition = null; 
+            }
+        }
+    }
+
+    // --- 5. INFO BOX ---
+    function createInfoControl() {
+        infoControl = L.control({position: 'topright'});
+        infoControl.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info-box'); 
+            this.update();
+            return this._div;
+        };
+        infoControl.update = function () {
+            const speedColor = getGradientColor(SPEED);
+            
+            this._div.innerHTML = `
+                <div class="info-title">🚀 GPS MONITOR</div>
+                
+                <div class="info-item">
+                    <span>Speed:</span> 
+                    <span class="info-value" style="color:${speedColor}; font-size:18px;">${SPEED.toFixed(1)} km/h</span>
+                </div>
+                
+                <div class="info-item">
+                    <span>Altitude:</span> 
+                    <span class="info-value">${ALT.toFixed(1)} m</span>
+                </div>
+
+                <div class="info-item">
+                    <span>Satellites:</span> 
+                    <span class="info-value">${SATS}</span>
+                </div>
+
+                <div class="info-footer">
+                    Lat: ${LAT.toFixed(6)} <br> 
+                    Lon: ${LON.toFixed(6)}
+                </div>
+            `;
+        };
+        infoControl.addTo(map);
+    }
+
+    function updateInfoBox() { if (infoControl) infoControl.update(); }
+
+    // --- 6. UTILS ---
+    function getGradientColor(speed) {
+        const stops = [{s:0,c:[0,0,255]},{s:40,c:[0,255,0]},{s:70,c:[255,165,0]},{s:100,c:[255,0,0]},{s:120,c:[148,0,211]}];
+        if (speed <= 0) return `rgb(${stops[0].c})`;
+        if (speed >= 120) return `rgb(${stops[4].c})`;
+        for (let i = 0; i < stops.length - 1; i++) {
+            if (speed >= stops[i].s && speed <= stops[i+1].s) {
+                let f = (speed - stops[i].s) / (stops[i+1].s - stops[i].s);
+                let r = Math.round(stops[i].c[0] + f * (stops[i+1].c[0] - stops[i].c[0]));
+                let g = Math.round(stops[i].c[1] + f * (stops[i+1].c[1] - stops[i].c[1]));
+                let b = Math.round(stops[i].c[2] + f * (stops[i+1].c[2] - stops[i].c[2]));
+                return `rgb(${r},${g},${b})`;
+            }
+        }
+    }
+</script>
+</body>
+</html>
