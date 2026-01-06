@@ -13,16 +13,113 @@
         #map { height: 100vh; width: 100%; }
 
         /* MENU & UI */
-        .control-panel { position: absolute; top: 10px; left: 50px; z-index: 1000; background: white; padding: 10px 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 8px; font-size: 13px; min-width: 160px; }
+        .control-panel { 
+            position: absolute; top: 10px; left: 50px; z-index: 1000; 
+            background: white; padding: 10px 15px; border-radius: 8px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+            display: flex; flex-direction: column; gap: 8px; font-size: 13px; min-width: 160px;
+            transition: all 0.3s ease; 
+        }
+        
+        /* Toggle Button */
+        .panel-toggle {
+            position: absolute; top: 10px; left: 10px; z-index: 1001;
+            background: white; border: none; width: 32px; height: 32px; border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 18px;
+        }
+        .panel-toggle:hover { background-color: #f0f0f0; }
+
         .control-label { font-weight: bold; color: #1890ff; font-size: 11px; text-transform: uppercase; }
         select, input[type="date"] { padding: 6px; border-radius: 4px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; }
         .loading-bar { height: 3px; width: 0%; background: #1890ff; transition: width 0.3s; margin-top: 5px; border-radius: 2px; }
         
         /* INFO BOX */
-        .info-box { position: absolute; top: 10px; right: 10px; z-index: 1000; padding: 12px 15px; background: rgba(255, 255, 255, 0.98); box-shadow: 0 4px 20px rgba(0,0,0,0.2); border-radius: 10px; min-width: 180px; border: 1px solid #f0f0f0; }
+        .info-box { 
+            position: absolute; top: 10px; right: 10px; z-index: 1000; 
+            padding: 12px 15px; background: rgba(255, 255, 255, 0.98); 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2); border-radius: 10px; 
+            min-width: 180px; border: 1px solid #f0f0f0; 
+            transition: all 0.3s ease;
+        }
         .info-title { font-weight: 800; color: #333; margin-bottom: 8px; border-bottom: 2px solid #1890ff; padding-bottom: 5px; text-align: center; font-size: 12px; }
         .info-item { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; color: #555; }
         .info-value { font-weight: bold; font-family: monospace; font-size: 14px; color: #222; }
+        
+        /* RESPONSIVE LOGIC */
+        /* Desktop: Panel visible by default, .hidden to hide */
+        .control-panel.hidden { display: none; }
+        
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .control-panel { display: none; } /* Mobile: Hidden by default */
+            .control-panel.visible { display: flex; } /* .visible to show */
+            
+            /* Info Box Mobile: Collapsed by default (Small Icon) */
+            .info-box {
+                cursor: pointer;
+                padding: 0;
+                width: 36px; height: 36px;
+                border-radius: 50%;
+                display: flex; align-items: center; justify-content: center;
+                min-width: unset;
+                overflow: hidden;
+            }
+            .info-box .info-content { display: none; }
+            .info-box .info-title { display: none; } /* Hide title when collapsed */
+            
+            /* Pseudo-element for icon when collapsed */
+            .info-box::after {
+                content: '📊'; /* Graph Icon */
+                font-size: 18px;
+            }
+
+            /* Expanded State */
+            .info-box.expanded { 
+                width: auto; height: auto;
+                min-width: 180px; padding: 12px 15px; 
+                border-radius: 10px;
+                display: block;
+            }
+            .info-box.expanded .info-title { 
+                display: block; 
+                margin-bottom: 8px; border-bottom: 2px solid #1890ff; 
+                text-align: center;
+            }
+            .info-box.expanded .info-content { display: block; }
+            .info-box.expanded::after { display: none; } /* Hide icon when expanded */
+            
+            /* Hide the toggle arrow in title since we toggle whole box */
+            .info-toggle-icon { display: none; }
+        }
+
+        /* ICON SELECTOR UI (Bottom-Left) */
+        .icon-menu-btn {
+            position: absolute; bottom: 20px; left: 10px; z-index: 1000;
+            width: 40px; height: 40px; border-radius: 50%;
+            background: white; border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center;
+        }
+        .icon-menu-btn:hover { background: #f0f0f0; }
+
+        .icon-selection-panel {
+            position: absolute; bottom: 70px; left: 10px; z-index: 1000;
+            background: white; padding: 10px; border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: none; flex-direction: column; gap: 8px;
+            width: 150px;
+        }
+        .icon-selection-panel.visible { display: flex; animation: fadeIn 0.2s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .icon-option {
+            display: flex; align-items: center; gap: 10px; padding: 5px;
+            cursor: pointer; border-radius: 4px; transition: background 0.2s;
+        }
+        .icon-option:hover { background: #e6f7ff; }
+        .icon-option svg { width: 24px; height: 24px; fill: #555; }
+        .icon-option.active { background: #e6f7ff; font-weight: bold; color: #1890ff; }
+        .icon-option.active svg { fill: #1890ff; }
 
         /* MARKER & POPUP */
         .custom-div-icon { background: transparent; border: none; }
@@ -31,7 +128,9 @@
 </head>
 <body>
 
-<div class="control-panel">
+<button class="panel-toggle" onclick="toggleHistoryPanel()" title="Cài đặt / Lịch sử">⚙️</button>
+
+<div class="control-panel" id="historyPanel">
     <label class="control-label">⚡ Xem nhanh</label>
     <select id="quickSelect" onchange="loadQuickHistory()">
         <option value="" disabled selected>-- Chọn --</option>
@@ -47,6 +146,23 @@
     <div id="statusText" style="font-size:10px; color:#666; text-align:center; margin-top:5px; border-top:1px solid #eee; padding-top:5px;">Sẵn sàng</div>
 </div>
 
+<!-- Icon Selection Menu -->
+<button class="icon-menu-btn" onclick="toggleIconPanel()" title="Đổi biểu tượng xe">🚘</button>
+<div class="icon-selection-panel" id="iconPanel">
+    <div class="icon-option active" onclick="changeIcon('car', this)">
+        <span class="preview-icon"><!-- SVG injected by JS --></span> Ô tô
+    </div>
+    <div class="icon-option" onclick="changeIcon('truck', this)">
+        <span class="preview-icon"></span> Xe tải
+    </div>
+    <div class="icon-option" onclick="changeIcon('bike', this)">
+        <span class="preview-icon"></span> Xe máy
+    </div>
+    <div class="icon-option" onclick="changeIcon('arrow', this)">
+        <span class="preview-icon"></span> Mũi tên
+    </div>
+</div>
+
 <div id="map"></div>
 
 <script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.3/src/index.js"></script>
@@ -54,13 +170,23 @@
 <script>
     const eraWidget = new EraWidget();
     let configJSON;
-    let LAT=0, LON=0, SPEED=0, ALT=0, TEMP=0, SATS=0;
+    let LAT=0, LON=0, SPEED=0, ALT=0, TEMP=0, SATS=0, BAT_VOLT=0;
     
     let map, marker, infoControl;
     let historyPolyline = null;
     let historyLayerGroup = null;
 
-    const carPath = "M880 348H730l-10.4-38.6c-4.9-18.1-21.5-30.7-40.2-30.7H344.6c-18.7 0-35.3 12.5-40.2 30.7L294 348H144c-17.7 0-32 14.3-32 32v384c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V380c0-17.7-14.3-32-32-32zM363.6 348l13-48h270.8l13 48H363.6zM848 732H176V412h672v320zM304 528c0-35.3 28.7-64 64-64s64 28.7 64 64-28.7 64-64 64-64-28.7-64-64z m352 0c0-35.3 28.7-64 64-64s64 28.7 64 64-28.7 64-64 64-64-28.7-64-64z";
+    // --- ICONS SVG PATHS ---
+    const ICONS = {
+        car: "M880 348H730l-10.4-38.6c-4.9-18.1-21.5-30.7-40.2-30.7H344.6c-18.7 0-35.3 12.5-40.2 30.7L294 348H144c-17.7 0-32 14.3-32 32v384c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V380c0-17.7-14.3-32-32-32zM363.6 348l13-48h270.8l13 48H363.6zM848 732H176V412h672v320zM304 528c0-35.3 28.7-64 64-64s64 28.7 64 64-28.7 64-64 64-64-28.7-64-64z m352 0c0-35.3 28.7-64 64-64s64 28.7 64 64-28.7 64-64 64-64-28.7-64-64z",
+        truck: "M904 512h-56c-4.4 0-8 3.6-8 8v320c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V520c0-4.4-3.6-8-8-8zM120 848c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V520c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v320zM768 288H256c-35.3 0-64 28.7-64 64v496c0 35.3 28.7 64 64 64h512c35.3 0 64-28.7 64-64V352c0-35.3-28.7-64-64-64zM416 432c0-17.7 14.3-32 32-32h128c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32H448c-17.7 0-32-14.3-32-32v-64z", // Simplified Truck
+        bike: "M668 416H356c-17.7 0-32 14.3-32 32v256c0 17.7 14.3 32 32 32h312c17.7 0 32-14.3 32-32V448c0-17.7-14.3-32-32-32zM512 192c-53 0-96 43-96 96s43 96 96 96 96-43 96-96-43-96-96-96z", // Simplified Bike (Dot+Box)
+        arrow: "M512 128l-288 640 288-128 288 128z" // Nav Arrow
+    };
+
+    let currentIconType = 'car';
+
+    const carPath = ICONS.car; // Keep reference for init if needed, though we use ICONS map now
 
     // --- 1. INIT ---
     eraWidget.init({
@@ -242,11 +368,70 @@
 
     // --- 4. MAP & REALTIME ---
     window.onload = function() {
-        map = L.map('map').setView([10.762622, 106.660172], 15);
+        map = L.map('map', { zoomControl: false }).setView([10.762622, 106.660172], 15);
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
         marker = L.marker([10.762622, 106.660172], { icon: createCarIcon() }).addTo(map);
         createInfoControl();
         setInterval(() => { if(LAT && LON && Math.abs(LAT)>0.1) marker.setLatLng([LAT, LON]); }, 1000);
+    }
+
+    function toggleHistoryPanel() {
+        const panel = document.getElementById('historyPanel');
+        // Mobile check (matches CSS media query)
+        if (window.innerWidth <= 768) {
+            panel.classList.toggle('visible');
+        } else {
+            panel.classList.toggle('hidden');
+        }
+    }
+
+    // --- ICON SELECTION LOGIC ---
+    function toggleIconPanel() {
+        document.getElementById('iconPanel').classList.toggle('visible');
+    }
+
+    function changeIcon(type, element) {
+        currentIconType = type;
+        
+        // Update Active State in Menu
+        document.querySelectorAll('.icon-option').forEach(el => el.classList.remove('active'));
+        if(element) element.classList.add('active');
+
+        // Update Map Marker
+        if (marker) {
+            const newIcon = createCarIcon();
+            marker.setIcon(newIcon);
+        }
+
+        // Close panel after selection
+        toggleIconPanel();
+    }
+
+    function createCarIcon() {
+        // Use current icon type
+        const path = ICONS[currentIconType] || ICONS.car;
+        
+        const svg = `<svg viewBox="0 0 1024 1024" width="48" height="48" xmlns="http://www.w3.org/2000/svg"><path d="${path}" fill="#1890ff" stroke="white" stroke-width="20"></path></svg>`;
+        
+        return L.divIcon({ 
+            className: 'custom-div-icon', 
+            html: `<div class="marker-pin">${svg}</div>`, 
+            iconSize: [48,48], 
+            iconAnchor: [24,24] 
+        });
+    }
+
+    // Inject SVGs into menu for preview
+    function initIconMenu() {
+        document.querySelectorAll('.icon-option').forEach(el => {
+            const type = el.getAttribute('onclick').match(/'([^']+)'/)[1];
+            const path = ICONS[type];
+            if(path) {
+                const svg = `<svg viewBox="0 0 1024 1024"><path d="${path}"></path></svg>`;
+                el.querySelector('.preview-icon').innerHTML = svg;
+            }
+        });
     }
 
     function parseRealtime(raw) {
@@ -255,31 +440,78 @@
             if(d.lat) LAT=parseFloat(d.lat); if(d.lon) LON=parseFloat(d.lon);
             if(d.spd) SPEED=parseFloat(d.spd); if(d.alt) ALT=parseFloat(d.alt);
             if(d.temp) TEMP=parseFloat(d.temp); if(d.sat) SATS=parseInt(d.sat);
+            if(d.bat) BAT_VOLT=parseFloat(d.bat); // Get Battery Voltage
             updateInfoBox();
         }
     }
 
-    function createCarIcon() {
-        const svg = `<svg viewBox="0 0 1024 1024" width="48" height="48" xmlns="http://www.w3.org/2000/svg"><path d="${carPath}" fill="#1890ff" stroke="white" stroke-width="20"></path></svg>`;
-        return L.divIcon({ className: 'custom-div-icon', html: `<div class="marker-pin">${svg}</div>`, iconSize:[48,48], iconAnchor:[24,24] });
-    }
-
     function createInfoControl() {
         infoControl = L.control({position: 'topright'});
-        infoControl.onAdd = function() { this._div = L.DomUtil.create('div', 'info-box'); this.update(); return this._div; };
+        infoControl.onAdd = function() { 
+            this._div = L.DomUtil.create('div', 'info-box'); 
+            
+            // Toggle Logic for Info Box (Mobile Only)
+            this._div.onclick = function(e) {
+                // Check if mobile
+                if (window.innerWidth <= 768) {
+                    this.classList.toggle('expanded');
+                }
+            };
+            
+            this.update(); 
+            return this._div; 
+        };
         infoControl.update = function() {
             const color = getGradientColor(SPEED);
+            const batIcon = getBatteryIcon(BAT_VOLT);
+            
             this._div.innerHTML = `
-                <div class="info-title">REALTIME MONITOR</div>
-                <div class="info-item"><span>Temp:</span><span class="info-value" style="color:#ff4d4f">${TEMP.toFixed(1)} °C</span></div>
-                <div class="info-item"><span>Speed:</span><span class="info-value" style="color:${color}">${SPEED.toFixed(1)} km/h</span></div>
-                <div class="info-item"><span>Alt:</span><span class="info-value">${ALT.toFixed(1)} m</span></div>
-                <div class="info-item"><span>Sats:</span><span class="info-value">${SATS}</span></div>
+                <div class="info-title">REALTIME MONITOR ${batIcon} <span class="info-toggle-icon"></span></div>
+                <div class="info-content">
+                    <div class="info-item"><span>Temp:</span><span class="info-value" style="color:#ff4d4f">${TEMP.toFixed(1)} °C</span></div>
+                    <div class="info-item"><span>Speed:</span><span class="info-value" style="color:${color}">${SPEED.toFixed(1)} km/h</span></div>
+                    <div class="info-item"><span>Alt:</span><span class="info-value">${ALT.toFixed(1)} m</span></div>
+                    <div class="info-item"><span>Sats:</span><span class="info-value">${SATS}</span></div>
+                    <div class="info-item"><span>Bat:</span><span class="info-value">${BAT_VOLT.toFixed(2)} V</span></div>
+                </div>
             `;
         };
         infoControl.addTo(map);
     }
     function updateInfoBox() { if(infoControl) infoControl.update(); }
+
+    function getBatteryIcon(volt) {
+        // Lion 4.1V max
+        // > 4.0V : 100% (Green)
+        // > 3.8V : 75%
+        // > 3.6V : 50%
+        // <= 3.6V: 25% (Red)
+        
+        let color = '#52c41a'; // Green
+        let fillWidth = 20; // Max width (approx)
+        
+        if (volt >= 4.0) {
+            fillWidth = 20; color = '#52c41a'; // 100%
+        } else if (volt >= 3.8) {
+            fillWidth = 15; color = '#52c41a'; // 75%
+        } else if (volt >= 3.6) {
+            fillWidth = 10; color = '#faad14'; // 50%
+        } else {
+            fillWidth = 5; color = '#ff4d4f'; // 25%
+        }
+
+        // Simple Battery SVG Icon
+        // Viewbox 0 0 24 24
+        // Body: Rect x=2 y=6 w=20 h=12 rx=2
+        // Cap: Rect x=22 y=10 w=2 h=4
+        return `
+            <svg width="24" height="14" viewBox="0 0 24 14" style="vertical-align: middle; margin-left: 5px;">
+                <rect x="1" y="1" width="20" height="12" rx="1" ry="1" stroke="#555" stroke-width="1" fill="none"></rect>
+                <rect x="22" y="4" width="2" height="6" rx="1" ry="1" fill="#555"></rect>
+                <rect x="3" y="3" width="${fillWidth}" height="8" rx="0.5" ry="0.5" fill="${color}"></rect>
+            </svg>
+        `;
+    }
 
     function getGradientColor(speed) {
         const stops = [{s:0,c:[0,0,255]},{s:40,c:[0,255,0]},{s:70,c:[255,165,0]},{s:100,c:[255,0,0]},{s:120,c:[148,0,211]}];
@@ -295,5 +527,8 @@
         }
     }
 </script>
+  eraWidget.ready();
+  mobileHeight(600);
+  initIconMenu(); // Init menu icons
 </body>
 </html>
