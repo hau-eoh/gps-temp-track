@@ -374,6 +374,9 @@
         marker = L.marker([10.762622, 106.660172], { icon: createCarIcon() }).addTo(map);
         createInfoControl();
         setInterval(() => { if(LAT && LON && Math.abs(LAT)>0.1) marker.setLatLng([LAT, LON]); }, 1000);
+        eraWidget.ready();
+        eraWidget.mobileHeight(900);
+        initIconMenu(); // Init menu icons
     }
 
     function toggleHistoryPanel() {
@@ -526,9 +529,6 @@
             }
         }
     }
-      eraWidget.ready();
-      eraWidget.mobileHeight(900);
-      initIconMenu(); // Init menu icons
 </script>
 </body>
 </html>
