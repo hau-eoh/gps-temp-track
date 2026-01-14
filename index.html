@@ -111,6 +111,7 @@
             display: none;
         }
 
+        /* Mobile: Monitor Button & Panel Logic */
         @media (max-width: 768px) {
             .control-panel {
                 display: none;
@@ -120,52 +121,64 @@
                 display: flex;
             }
 
+            /* Monitor Panel on Mobile */
             .info-box {
-                cursor: pointer;
-                padding: 0;
-                width: 36px;
-                height: 36px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                min-width: unset;
-                overflow: hidden;
-            }
-
-            .info-box .info-content,
-            .info-box .info-title {
                 display: none;
-            }
-
-            .info-box::after {
-                content: '📊';
-                font-size: 18px;
-            }
-
-            .info-box.expanded {
+                /* Hidden by default */
+                top: 60px;
+                /* Below the button */
+                right: 10px;
                 width: auto;
-                height: auto;
-                min-width: 180px;
-                padding: 12px 15px;
-                border-radius: 10px;
-                display: block;
+                min-width: 200px;
             }
 
-            .info-box.expanded .info-title {
+            .info-box.visible {
                 display: block;
-                margin-bottom: 8px;
-                border-bottom: 2px solid #1890ff;
-                text-align: center;
+                animation: fadeIn 0.2s;
             }
 
-            .info-box.expanded .info-content {
-                display: block;
-            }
-
-            .info-box.expanded::after {
+            /* Hide the toggle icon inside the box since we have a button now */
+            .info-toggle-icon {
                 display: none;
             }
+        }
+
+        .monitor-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1001;
+            background: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        /* Update info-box for Desktop */
+        .info-box {
+            position: absolute;
+            top: 10px;
+            right: 50px;
+            /* Shifted left of the button */
+            z-index: 1000;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            min-width: 180px;
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+        }
+
+        .info-box.hidden {
+            display: none;
         }
 
         .icon-menu-btn {
@@ -244,19 +257,7 @@
             fill: #1890ff;
         }
 
-        .info-box {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 1000;
-            padding: 12px 15px;
-            background: rgba(255, 255, 255, 0.98);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            min-width: 180px;
-            border: 1px solid #f0f0f0;
-            transition: all 0.3s ease;
-        }
+
 
         .info-title {
             font-weight: 800;
@@ -298,6 +299,12 @@
 
     <button class="panel-toggle" onclick="toggleHistoryPanel()" title="Cài đặt / Lịch sử">⚙️</button>
 
+    <!-- Monitor Toggle & Panel -->
+    <button class="monitor-toggle" onclick="toggleMonitorPanel()" title="Thông số xe">📊</button>
+    <div class="info-box" id="monitorPanel">
+        <!-- Content injected by JS -->
+    </div>
+
     <div class="control-panel" id="historyPanel">
         <label class="control-label">⚡ Xem nhanh</label>
         <select id="quickSelect" onchange="loadQuickHistory()">
@@ -333,7 +340,7 @@
         let configJSON;
         let LAT = 0, LON = 0, SPEED = 0, ALT = 0, TEMP = 0, SATS = 0, BAT_VOLT = 0;
 
-        let map, marker, infoControl;
+        let map, marker; // Removed infoControl, using separate DIV named monitorPanel
         let historyPolyline = null;
         let historyLayerGroup = null;
 
@@ -403,7 +410,8 @@
             // Add Marker
             marker = L.marker([10.762622, 106.660172], { icon: createCarIcon() }).addTo(map);
 
-            createInfoControl();
+            // createInfoControl(); // REMOVED - Using static HTML + JS update
+            updateInfoBox();       // Initial render
             initIconMenu();
 
             // Loop update marker
@@ -581,21 +589,20 @@
             }
         }
 
-        function createInfoControl() {
-            infoControl = L.control({ position: 'topright' });
-            infoControl.onAdd = function () {
-                this._div = L.DomUtil.create('div', 'info-box');
-                this._div.onclick = function (e) { if (window.innerWidth <= 768) { this.classList.toggle('expanded'); } };
-                this.update(); return this._div;
-            };
-            infoControl.update = function () {
-                const color = getGradientColor(SPEED);
-                const batIcon = getBatteryIcon(BAT_VOLT);
-                this._div.innerHTML = `<div class="info-title">REALTIME MONITOR ${batIcon} <span class="info-toggle-icon"></span></div><div class="info-content"><div class="info-item"><span>Temp:</span><span class="info-value" style="color:#ff4d4f">${TEMP.toFixed(1)} °C</span></div><div class="info-item"><span>Speed:</span><span class="info-value" style="color:${color}">${SPEED.toFixed(1)} km/h</span></div><div class="info-item"><span>Alt:</span><span class="info-value">${ALT.toFixed(1)} m</span></div><div class="info-item"><span>Sats:</span><span class="info-value">${SATS}</span></div><div class="info-item"><span>Bat:</span><span class="info-value">${BAT_VOLT.toFixed(2)} V</span></div></div>`;
-            };
-            infoControl.addTo(map);
+        // --- UPDATED MONITOR LOGIC ---
+        function updateInfoBox() {
+            const div = document.getElementById('monitorPanel');
+            if (!div) return;
+            const color = getGradientColor(SPEED);
+            const batIcon = getBatteryIcon(BAT_VOLT);
+            div.innerHTML = `<div class="info-title">REALTIME MONITOR ${batIcon}</div><div class="info-content"><div class="info-item"><span>Temp:</span><span class="info-value" style="color:#ff4d4f">${TEMP.toFixed(1)} °C</span></div><div class="info-item"><span>Speed:</span><span class="info-value" style="color:${color}">${SPEED.toFixed(1)} km/h</span></div><div class="info-item"><span>Alt:</span><span class="info-value">${ALT.toFixed(1)} m</span></div><div class="info-item"><span>Sats:</span><span class="info-value">${SATS}</span></div><div class="info-item"><span>Bat:</span><span class="info-value">${BAT_VOLT.toFixed(2)} V</span></div></div>`;
         }
-        function updateInfoBox() { if (infoControl) infoControl.update(); }
+
+        function toggleMonitorPanel() {
+            const panel = document.getElementById('monitorPanel');
+            if (window.innerWidth <= 768) { panel.classList.toggle('visible'); }
+            else { panel.classList.toggle('hidden'); }
+        }
 
         function getBatteryIcon(volt) {
             let color = '#52c41a'; let fillWidth = 20;
