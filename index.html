@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS Tracker - Multi Map Layers</title>
+    <title>GPS Tracker - Shortbread Default</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -12,7 +12,28 @@
         body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         #map { height: 100vh; width: 100%; }
 
-        /* --- UI STYLES (GIỮ NGUYÊN) --- */
+        /* --- TÙY CHỈNH VỊ TRÍ & ICON CONTROL (ĐIỂM MỚI) --- */
+        
+        /* Chỉnh lại style nút chọn Layer cho đồng bộ với nút Zoom */
+        .leaflet-control-layers {
+            border: 2px solid rgba(0,0,0,0.2);
+            border-radius: 4px;
+            box-shadow: none;
+            margin-bottom: 5px !important; /* Khoảng cách với nút Zoom */
+        }
+        
+        /* Mobile: Tăng kích thước nút bấm một chút cho dễ ấn */
+        @media (max-width: 768px) {
+            .leaflet-touch .leaflet-control-layers, 
+            .leaflet-touch .leaflet-bar {
+                border: 2px solid rgba(0,0,0,0.2);
+            }
+            .leaflet-control-layers-toggle {
+                width: 44px; height: 44px;
+            }
+        }
+
+        /* --- UI STYLES CŨ (GIỮ NGUYÊN) --- */
         .control-panel { 
             position: absolute; top: 10px; left: 50px; z-index: 1000; 
             background: white; padding: 10px 15px; border-radius: 8px; 
@@ -59,9 +80,6 @@
         
         .custom-div-icon { background: transparent; border: none; }
         .marker-pin { filter: drop-shadow(0px 3px 6px rgba(0,0,0,0.4)); }
-        
-        /* Tùy chỉnh Layer Control cho đẹp hơn */
-        .leaflet-control-layers { border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); border: none; }
     </style>
 </head>
 <body>
@@ -105,7 +123,6 @@
     let historyPolyline = null;
     let historyLayerGroup = null;
 
-    // --- ICONS SVG ---
     const ICONS = {
         car: "M880 348H730l-10.4-38.6c-4.9-18.1-21.5-30.7-40.2-30.7H344.6c-18.7 0-35.3 12.5-40.2 30.7L294 348H144c-17.7 0-32 14.3-32 32v384c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V380c0-17.7-14.3-32-32-32zM363.6 348l13-48h270.8l13 48H363.6zM848 732H176V412h672v320zM304 528c0-35.3 28.7-64 64-64s64 28.7 64 64-28.7 64-64 64-64-28.7-64-64z m352 0c0-35.3 28.7-64 64-64s64 28.7 64 64-28.7 64-64 64-64-28.7-64-64z",
         truck: "M904 512h-56c-4.4 0-8 3.6-8 8v320c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V520c0-4.4-3.6-8-8-8zM120 848c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V520c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v320zM768 288H256c-35.3 0-64 28.7-64 64v496c0 35.3 28.7 64 64 64h512c35.3 0 64-28.7 64-64V352c0-35.3-28.7-64-64-64zM416 432c0-17.7 14.3-32 32-32h128c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32H448c-17.7 0-32-14.3-32-32v-64z",
@@ -136,59 +153,58 @@
         }
     });
 
-    // --- 2. WINDOW LOAD (SETUP MAP & LAYERS) ---
+    // --- SETUP MAP (FIXED POSITION) ---
     window.onload = function() {
-        // --- ĐỊNH NGHĨA CÁC LỚP BẢN ĐỒ ---
+        // Định nghĩa các lớp bản đồ
+        const shortbreadLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            maxZoom: 20, attribution: '© CARTO'
+        });
         
-        // 1. Giao thông (Transport) - Ưu tiên mặc định
         const transportLayer = L.tileLayer('https://tile.memomaps.de/tilegen/{z}/{x}/{y}.png', {
             maxZoom: 18, attribution: 'Map <a href="https://memomaps.de/">memomaps.de</a>'
         });
 
-        // 2. Gọn gàng (Shortbread Style - CartoDB Voyager)
-        const shortbreadLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            maxZoom: 20, attribution: '© CARTO'
-        });
-
-        // 3. Mặc định (OSM Standard)
         const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19, attribution: '© OpenStreetMap'
         });
 
-        // 4. Vệ tinh (Esri World Imagery)
         const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             maxZoom: 19, attribution: 'Tiles © Esri'
         });
 
-        // --- KHỞI TẠO MAP ---
+        // 1. Khởi tạo Map với layer mặc định là "Gọn gàng" (Shortbread)
         map = L.map('map', { 
-            zoomControl: false,
-            layers: [transportLayer] // <--- SET MẶC ĐỊNH LÀ GIAO THÔNG
+            zoomControl: false, // Tắt zoom mặc định (để add sau cho đúng thứ tự)
+            layers: [shortbreadLayer] // <--- MẶC ĐỊNH LÀ SHORTBREAD
         }).setView([10.762622, 106.660172], 15);
 
-        // Thêm Menu chọn Layer (Góc trên phải)
+        // 2. Add Layer Control (Nút chọn bản đồ)
+        // Vị trí: bottomright
         const baseMaps = {
-            "Giao thông (Transport)": transportLayer,
             "Gọn gàng (Shortbread)": shortbreadLayer,
+            "Giao thông (Transport)": transportLayer,
             "Mặc định (Standard)": osmLayer,
             "Vệ tinh (Satellite)": satelliteLayer
         };
-        L.control.layers(baseMaps).addTo(map);
+        // Add trước Zoom để nó nằm trên Zoom
+        L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
+
+        // 3. Add Zoom Control (Nút +/-)
+        // Add sau Layer Control để nó nằm dưới cùng
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
 
         // Các thành phần khác
-        L.control.zoom({ position: 'bottomright' }).addTo(map);
         marker = L.marker([10.762622, 106.660172], { icon: createCarIcon() }).addTo(map);
         createInfoControl();
         
         setInterval(() => { if(LAT && LON && Math.abs(LAT)>0.1) marker.setLatLng([LAT, LON]); }, 1000);
 
-        // --- CẤU HÌNH CUỐI CÙNG ---
         initIconMenu();
-        eraWidget.mobileHeight(600); // Set chiều cao
-        eraWidget.ready();           // Báo hiệu xong
+        eraWidget.mobileHeight(600);
+        eraWidget.ready();
     }
 
-    // --- 3. LOGIC XỬ LÝ (GIỮ NGUYÊN) ---
+    // --- CÁC HÀM LOGIC CŨ GIỮ NGUYÊN ---
     function loadQuickHistory(hoursOverride) {
         let hours = hoursOverride || document.getElementById('quickSelect').value;
         if (!hours) return;
