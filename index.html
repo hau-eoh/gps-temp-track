@@ -310,6 +310,7 @@
         <select id="quickSelect" onchange="loadQuickHistory()">
             <option value="" disabled selected>-- Chọn --</option>
             <option value="1">1 Giờ qua</option>
+            <option value="3">3 Giờ qua</option>
             <option value="6">6 Giờ qua</option>
             <option value="12">12 Giờ qua</option>
             <option value="24">24 Giờ qua</option>
@@ -359,7 +360,7 @@
             arrow: "0 0 86.92 86.92" // Arrow thường là hình vuông
         };
 
-        let currentIconType = 'car';
+        let currentIconType = 'arrow';
 
         // --- 2. INIT E-RA ---
         eraWidget.init({
@@ -551,7 +552,14 @@
             });
 
             if (validCount > 0) {
-                document.getElementById('statusText').innerText = `Hiển thị ${validCount} điểm\n(Bỏ qua ${skippedCount} lỗi)`;
+                // Calculate Total Distance
+                let totalDist = 0;
+                for (let i = 0; i < latLngs.length - 1; i++) {
+                    totalDist += L.latLng(latLngs[i]).distanceTo(L.latLng(latLngs[i + 1]));
+                }
+                const distKm = (totalDist / 1000).toFixed(2);
+
+                document.getElementById('statusText').innerText = `Hiển thị ${validCount} điểm (${distKm} km)\n(Bỏ qua ${skippedCount} lỗi)`;
                 historyPolyline = L.polyline(latLngs, { color: '#999', weight: 3, opacity: 0.5, dashArray: '5, 5' }).addTo(map);
                 historyLayerGroup = L.layerGroup().addTo(map);
 
