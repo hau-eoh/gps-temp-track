@@ -418,7 +418,7 @@
             // Loop update marker
             setInterval(() => { if (LAT && LON && Math.abs(LAT) > 0.1) marker.setLatLng([LAT, LON]); }, 1000);
 
-            eraWidget.mobileHeight(600);
+            eraWidget.requestAdjustMobileHeight(600);
             eraWidget.ready();
         }
 
