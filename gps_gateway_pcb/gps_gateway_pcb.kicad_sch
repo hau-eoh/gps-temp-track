@@ -7323,6 +7323,196 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "UserLibrary:TTLtoRS485"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "M"
+				(at -2.032 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "RS485"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "UserLibrary:Module TTL to RS485"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "TTLtoRS485_0_1"
+				(rectangle
+					(start -10.16 6.35)
+					(end 10.16 -6.35)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "TTLtoRS485_1_1"
+				(pin power_in line
+					(at -12.7 3.81 0)
+					(length 2.54)
+					(name "VCC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -12.7 1.27 0)
+					(length 2.54)
+					(name "TXD"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at -12.7 -1.27 0)
+					(length 2.54)
+					(name "RXD"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at -12.7 -3.81 0)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at 12.7 3.81 180)
+					(length 2.54)
+					(name "RS485-A"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at 12.7 0 180)
+					(length 2.54)
+					(name "RS485-B"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 12.7 -3.81 180)
+					(length 2.54)
+					(name "E"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "power:+3.3V"
 			(power)
 			(pin_numbers
@@ -9405,6 +9595,16 @@
 	)
 	(wire
 		(pts
+			(xy 72.39 182.88) (xy 81.28 182.88)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "524859e6-983c-40ed-b2b3-abdde93e40f0")
+	)
+	(wire
+		(pts
 			(xy 267.97 90.17) (xy 267.97 88.9)
 		)
 		(stroke
@@ -9452,6 +9652,16 @@
 			(type default)
 		)
 		(uuid "550e2e85-984f-4435-90a5-6d92c447a65c")
+	)
+	(wire
+		(pts
+			(xy 40.64 187.96) (xy 40.64 186.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "551bf66f-6497-4a04-b388-5da7550c5f1d")
 	)
 	(wire
 		(pts
@@ -9885,6 +10095,16 @@
 	)
 	(wire
 		(pts
+			(xy 72.39 186.69) (xy 81.28 186.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7353b826-5a6c-4124-a790-8641982c2c39")
+	)
+	(wire
+		(pts
 			(xy 160.02 262.89) (xy 160.02 265.43)
 		)
 		(stroke
@@ -10042,6 +10262,16 @@
 			(type default)
 		)
 		(uuid "7d4a6d99-a05a-44c7-b4c4-2b3e498677d5")
+	)
+	(wire
+		(pts
+			(xy 40.64 184.15) (xy 46.99 184.15)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7d921f62-d7c9-4c0d-80a6-e9f2757e19cb")
 	)
 	(wire
 		(pts
@@ -11115,6 +11345,16 @@
 	)
 	(wire
 		(pts
+			(xy 40.64 181.61) (xy 46.99 181.61)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5da2777-c92b-43b8-ab9e-1521da2fc0ad")
+	)
+	(wire
+		(pts
 			(xy 361.95 68.58) (xy 361.95 73.66)
 		)
 		(stroke
@@ -11325,6 +11565,26 @@
 	)
 	(wire
 		(pts
+			(xy 40.64 186.69) (xy 46.99 186.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e73bc94e-573b-48ab-8c53-4c11f4144b81")
+	)
+	(wire
+		(pts
+			(xy 72.39 179.07) (xy 81.28 179.07)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e7495ebd-c17d-496f-bdbc-425bc813837e")
+	)
+	(wire
+		(pts
 			(xy 214.63 226.06) (xy 237.49 226.06)
 		)
 		(stroke
@@ -11372,6 +11632,16 @@
 			(type default)
 		)
 		(uuid "ea4a5482-bbf8-43cb-a072-db9a943566c2")
+	)
+	(wire
+		(pts
+			(xy 46.99 179.07) (xy 40.64 179.07)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ea964875-6037-46a2-848c-096f0ecd90d6")
 	)
 	(wire
 		(pts
@@ -11535,6 +11805,16 @@
 	)
 	(wire
 		(pts
+			(xy 40.64 179.07) (xy 40.64 177.8)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fa876cfa-d623-4ad4-987e-6982560ce477")
+	)
+	(wire
+		(pts
 			(xy 280.67 57.15) (xy 294.64 57.15)
 		)
 		(stroke
@@ -11582,6 +11862,16 @@
 			(type default)
 		)
 		(uuid "feddd2c7-5428-49ca-a0aa-9df17d438f70")
+	)
+	(wire
+		(pts
+			(xy 81.28 186.69) (xy 81.28 189.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ffcb4382-8d2a-4150-92a6-c5b0e08be7fc")
 	)
 	(label "USB_DP"
 		(at 67.31 120.65 180)
@@ -11683,6 +11973,16 @@
 		)
 		(uuid "2cfc2ecc-13e4-4143-b74d-5985763888a8")
 	)
+	(label "IO0"
+		(at 40.64 184.15 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "32f7fd20-06d5-4a23-b5bc-e7d30360ad53")
+	)
 	(label "IO2"
 		(at 68.58 48.26 180)
 		(effects
@@ -11712,6 +12012,16 @@
 			(justify left bottom)
 		)
 		(uuid "4321c664-4f45-4556-9e29-f905535e11d7")
+	)
+	(label "IO1"
+		(at 40.64 181.61 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "45250dde-dd47-49c1-bded-dc15d62be361")
 	)
 	(label "IO0"
 		(at 68.58 53.34 180)
@@ -12229,6 +12539,71 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 81.28 189.23 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "025fb402-b10a-41a2-9c67-9bfb98597ae8")
+		(property "Reference" "#PWR039"
+			(at 81.28 195.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 81.28 192.786 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 81.28 189.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 81.28 189.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 81.28 189.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c514b806-8401-4d3c-b933-9c60298b5926")
+		)
+		(instances
+			(project "gps_gateway_pcb"
+				(path "/c0ff3d57-9023-4c87-af2f-e24037aed1c3"
+					(reference "#PWR039")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector:TestPoint")
 		(at 391.16 78.74 270)
 		(unit 1)
@@ -12598,6 +12973,71 @@
 			(project ""
 				(path "/c0ff3d57-9023-4c87-af2f-e24037aed1c3"
 					(reference "JP1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 40.64 187.96 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "182f3cd4-2210-4173-be9e-237d06a6c261")
+		(property "Reference" "#PWR038"
+			(at 40.64 194.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 40.64 191.516 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 40.64 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 40.64 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 40.64 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "69867857-35a8-4cc7-9a6c-2d02c0ec3263")
+		)
+		(instances
+			(project "gps_gateway_pcb"
+				(path "/c0ff3d57-9023-4c87-af2f-e24037aed1c3"
+					(reference "#PWR038")
 					(unit 1)
 				)
 			)
@@ -16875,6 +17315,72 @@
 		)
 	)
 	(symbol
+		(lib_id "power:VCC")
+		(at 40.64 177.8 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "85a89007-de6a-493b-8844-c35c29cc2265")
+		(property "Reference" "#PWR030"
+			(at 40.64 181.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "VCC33"
+			(at 40.64 172.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 40.64 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 40.64 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"VCC\""
+			(at 40.64 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "6df92795-fe61-4013-9b01-5a79a5ddcef8")
+		)
+		(instances
+			(project "gps_gateway_pcb"
+				(path "/c0ff3d57-9023-4c87-af2f-e24037aed1c3"
+					(reference "#PWR030")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R_Small_US")
 		(at 365.76 83.82 90)
 		(unit 1)
@@ -17506,6 +18012,89 @@
 			(project "gps_gateway_pcb"
 				(path "/c0ff3d57-9023-4c87-af2f-e24037aed1c3"
 					(reference "D3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "UserLibrary:TTLtoRS485")
+		(at 59.69 182.88 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8e30597a-2719-4f53-bafe-cd674e3c5892")
+		(property "Reference" "M1"
+			(at 59.69 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "RS485"
+			(at 59.69 173.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "UserLibrary:Module TTL to RS485 SMD"
+			(at 59.69 182.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 59.69 182.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 59.69 182.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "f5503be1-a70e-46c9-8043-e31828c6c04a")
+		)
+		(pin "7"
+			(uuid "86c8032f-c3c7-49c5-b0e9-73d745152a6a")
+		)
+		(pin "3"
+			(uuid "eea58b14-44cd-4f93-9968-c8f39a365cd0")
+		)
+		(pin "4"
+			(uuid "70999e24-c068-4c46-95f4-9fa613ff1e2d")
+		)
+		(pin "2"
+			(uuid "8b8abd63-3554-4915-8dea-cfc3fefdffd4")
+		)
+		(pin "5"
+			(uuid "dc5f9982-2ce9-4bee-86f8-4ac452fe96e4")
+		)
+		(pin "6"
+			(uuid "825a1822-9337-488c-81f6-0206ff031e36")
+		)
+		(instances
+			(project ""
+				(path "/c0ff3d57-9023-4c87-af2f-e24037aed1c3"
+					(reference "M1")
 					(unit 1)
 				)
 			)
