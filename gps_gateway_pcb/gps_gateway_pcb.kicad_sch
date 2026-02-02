@@ -12043,7 +12043,7 @@
 		)
 		(uuid "4dfa8fa0-a417-419b-ba56-87c812c4ed97")
 	)
-	(label "ESP_RX0"
+	(label "IO5"
 		(at 379.73 71.12 0)
 		(effects
 			(font
@@ -12102,6 +12102,16 @@
 			(justify left bottom)
 		)
 		(uuid "6212fc78-ca80-4ef2-8296-8598e15b53ec")
+	)
+	(label "ESP_TX_SIM"
+		(at 280.67 69.85 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "659f974d-4bc3-4d3b-97cd-02b8aac53076")
 	)
 	(label "SCK"
 		(at 280.67 54.61 0)
@@ -12173,16 +12183,6 @@
 		)
 		(uuid "73b43c0d-54f4-469b-970c-1088ddb7e587")
 	)
-	(label "ESP_TX0"
-		(at 280.67 69.85 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "76db6e3f-576c-4a93-a0c0-9c875ddc336e")
-	)
 	(label "RST"
 		(at 354.33 54.61 180)
 		(effects
@@ -12192,6 +12192,16 @@
 			(justify right bottom)
 		)
 		(uuid "76e85887-8e48-444b-89fa-e377e6473adf")
+	)
+	(label "ESP_RX_SIM"
+		(at 280.67 72.39 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "77d25f1f-71f3-40f6-9578-18987b70f60c")
 	)
 	(label "Status"
 		(at 354.33 64.77 180)
@@ -12213,6 +12223,16 @@
 		)
 		(uuid "7db32ab9-fe14-44ee-b5ce-cc6151f04018")
 	)
+	(label "IO5"
+		(at 354.33 62.23 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "7fe261ed-b032-4c80-927b-49a211a49d77")
+	)
 	(label "USIM_CLK"
 		(at 214.63 226.06 0)
 		(effects
@@ -12232,16 +12252,6 @@
 			(justify left bottom)
 		)
 		(uuid "87e4d11f-aae0-4e6f-8a35-66d1d875e213")
-	)
-	(label "ESP_TX_SIM"
-		(at 354.33 62.23 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "88393540-8ad1-45a7-866e-37e675f51ad8")
 	)
 	(label "USIM_CLK"
 		(at 176.53 179.07 0)
@@ -12303,6 +12313,16 @@
 		)
 		(uuid "b13c48b0-2f8c-42aa-9013-c83e38a4a46b")
 	)
+	(label "IO4"
+		(at 354.33 59.69 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "b3ac26ee-ee8e-48d1-96a2-b169da03208b")
+	)
 	(label "IO1"
 		(at 280.67 80.01 0)
 		(effects
@@ -12332,16 +12352,6 @@
 			(justify left bottom)
 		)
 		(uuid "c25f7b28-2ec0-4043-8505-97890be96f11")
-	)
-	(label "ESP_RX_SIM"
-		(at 354.33 59.69 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "cb4bed2b-78f1-4b48-9c10-a50107f74472")
 	)
 	(label "BOOT"
 		(at 379.73 78.74 0)
@@ -12383,7 +12393,7 @@
 		)
 		(uuid "d7ac4e2c-4f59-493d-a0cc-e0fa9b41351d")
 	)
-	(label "ESP_TX0"
+	(label "IO4"
 		(at 379.73 73.66 0)
 		(effects
 			(font
@@ -12422,16 +12432,6 @@
 			(justify right bottom)
 		)
 		(uuid "e64ff3ac-db8e-461f-a8be-4de7cfdd77fb")
-	)
-	(label "ESP_RX0"
-		(at 280.67 72.39 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "f069dbd3-6cc2-4f72-9c78-05e7fa3c21ba")
 	)
 	(label "USIM_RST"
 		(at 214.63 223.52 0)
@@ -12622,7 +12622,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "TestPoint"
+		(property "Value" "BOOT"
 			(at 396.24 80.0099 90)
 			(effects
 				(font
@@ -17026,7 +17026,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "TestPoint"
+		(property "Value" "IO4"
 			(at 396.24 74.9299 90)
 			(effects
 				(font
@@ -17167,10 +17167,9 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "806bab5a-29b8-4770-9dc5-de06401ce5c5")
 		(property "Reference" "TP1"
-			(at 396.24 69.8499 90)
+			(at 396.24 69.85 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17178,7 +17177,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "TestPoint"
+		(property "Value" "IO5"
 			(at 396.24 72.3899 90)
 			(effects
 				(font
@@ -22808,7 +22807,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "TestPoint"
+		(property "Value" "RST"
 			(at 396.24 77.4699 90)
 			(effects
 				(font
