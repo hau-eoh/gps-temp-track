@@ -8396,6 +8396,10 @@
 		(uuid "b23262b5-5393-4090-b5d4-2d0a3c5003c1")
 	)
 	(no_connect
+		(at 237.49 236.22)
+		(uuid "b4fb1bf9-3b71-49e2-afb2-49898ca8e798")
+	)
+	(no_connect
 		(at 340.36 77.47)
 		(uuid "b61825bf-4baf-4295-bf13-f8c73897e13f")
 	)
@@ -10172,16 +10176,6 @@
 			(type default)
 		)
 		(uuid "7873b37a-94ac-44f4-b24e-6c7da90f631c")
-	)
-	(wire
-		(pts
-			(xy 214.63 236.22) (xy 237.49 236.22)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "78b6f012-8014-4d57-9370-3892d0773c05")
 	)
 	(wire
 		(pts
@@ -11963,16 +11957,6 @@
 		)
 		(uuid "29b57311-e247-4641-b9d9-169bdf7e8f6c")
 	)
-	(label "MCU_IN1"
-		(at 354.33 67.31 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "2cfc2ecc-13e4-4143-b74d-5985763888a8")
-	)
 	(label "IO0"
 		(at 40.64 184.15 0)
 		(effects
@@ -11982,6 +11966,16 @@
 			(justify left bottom)
 		)
 		(uuid "32f7fd20-06d5-4a23-b5bc-e7d30360ad53")
+	)
+	(label "MCU_SIM_KEY"
+		(at 354.33 67.31 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "3b6f9655-923d-4479-b364-51eff1c615d7")
 	)
 	(label "IO2"
 		(at 68.58 48.26 180)
@@ -12412,16 +12406,6 @@
 			(justify left bottom)
 		)
 		(uuid "e099f7b8-28b5-4a36-8c9a-ef29b5226f31")
-	)
-	(label "USIM_DET"
-		(at 214.63 236.22 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "e1c06f3d-bc2c-48da-8010-0569e32f1731")
 	)
 	(label "USB_DN"
 		(at 67.31 118.11 180)
